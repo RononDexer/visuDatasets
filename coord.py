@@ -45,6 +45,98 @@ def cleanData(graph, node, county, state, cptExited):
 		cptExited+=1
 		return cptExited;
 	return cptExited;
+	
+def cutGraph(graph):
+	
+	## Get the necessary properties	
+	ALIGNMNT =  graph.getIntegerProperty("ALIGNMNT")
+	C_M_ZONE =  graph.getIntegerProperty("C_M_ZONE")
+	TRA_CONT =  graph.getIntegerProperty("TRA_CONT")
+	SP_LIMIT =  graph.getIntegerProperty("SP_LIMIT")
+	T_CONT_F =  graph.getIntegerProperty("T_CONT_F")
+	ROUTE =  graph.getIntegerProperty("ROUTE")
+	roadProperties=[]
+	roadProperties.append(ALIGNMNT)
+	roadProperties.append(C_M_ZONE)
+	roadProperties.append(TRA_CONT)
+	roadProperties.append(SP_LIMIT)
+	roadProperties.append(T_CONT_F)
+	roadProperties.append(ROUTE)
+
+	latitude =  graph.getIntegerProperty("LATITUDE")
+	longitude =  graph.getIntegerProperty("LONGITUD")
+	VE_TOTAL =  graph.getIntegerProperty("VE_TOTAL")
+	PERSONS =  graph.getIntegerProperty("PERSONS")
+	DRUNK_DR =  graph.getIntegerProperty("DRUNK_DR")
+	FATALS =  graph.getIntegerProperty("FATALS")
+	accidentProperties=[]
+	accidentProperties.append(latitude)
+	accidentProperties.append(longitude)
+	accidentProperties.append(VE_TOTAL)
+	accidentProperties.append(PERSONS)
+	accidentProperties.append(DRUNK_DR)
+	accidentProperties.append(FATALS)
+	
+	WEATHER =  graph.getIntegerProperty("WEATHER")
+	LGT_COND =  graph.getIntegerProperty("LGT_COND")
+	SUR_COND =  graph.getIntegerProperty("SUR_COND")
+	drivingProperties=[]
+	drivingProperties.append(WEATHER)
+	drivingProperties.append(LGT_COND)
+	drivingProperties.append(SUR_COND)
+
+	MONTH =  graph.getIntegerProperty("MONTH")
+	DAY =  graph.getIntegerProperty("DAY")	
+	dateProperties=[]
+	dateProperties.append(MONTH)
+	dateProperties.append(DAY)
+	
+	DAY_WEEK =  graph.getIntegerProperty("DAY_WEEK")
+	HOUR =  graph.getIntegerProperty("HOUR")
+	periodProperties=[]
+	periodProperties.append(DAY_WEEK)
+	periodProperties.append(HOUR)
+	
+	COUNTY =  graph.getIntegerProperty("COUNTY")
+	CITY =  graph.getIntegerProperty("CITY")
+	countyProperties=[]
+	countyProperties.append(COUNTY)
+	countyProperties.append(CITY)
+	
+	STATE =  graph.getIntegerProperty("STATE")
+	
+	graphProperties = [accidentProperties, drivingProperties, dateProperties, periodProperties, countyProperties]
+	
+	## Because of the growing nodes into graph => Pass only 1 times into nodes 
+	graphCpy = graph
+	##for propertie in graphProperties:
+	##	##Create subGraph
+	##for node in graphCpy.getNodes():
+	##	for propertie in graphProperties:
+	##		##Add node to subGraph if conditions are news
+	##	##Edge between the 
+	
+	subState = graph.addSubGraph("states")
+	for i in range(1,57):
+		subState.addSubGraph(str(i)) 
+		
+	subCounty = graph.addSubGraph("counties")
+	## New for if use city
+	for i in range(0,841):
+		subCounty.addSubGraph(str(i))
+
+	for n in graphCpy.getNodes():
+		state = subState.getSubGraph(str(STATE[n]))
+		county = subCounty.getSubGraph(str(COUNTY[n]))
+		state.addNode(n)
+		county.addNode(n)	
+		
+	##Edges ?
+		
+		
+	
+	
+	
 
 # the main(graph) function must be defined to run the script on the current graph
 # this script will redraw the graph as a onion graph. The input graph must be a tree.
@@ -77,7 +169,7 @@ def main(graph):
 	REL_JUNC =  graph.getIntegerProperty("REL_JUNC")
 	REL_ROAD =  graph.getIntegerProperty("REL_ROAD")
 	ROUTE =  graph.getIntegerProperty("ROUTE")
-	SCH_BUS =  graph.getBooleanProperty("SCH_BUS")
+	SCH_BUS =  graph.getIntegerProperty("SCH_BUS")
 	SP_LIMIT =  graph.getIntegerProperty("SP_LIMIT")
 	STATE =  graph.getIntegerProperty("STATE")
 	ST_CASE =  graph.getIntegerProperty("ST_CASE")
@@ -108,6 +200,8 @@ def main(graph):
 		viewSize[n] = viewSize[n]/100
 		viewLayout[n], viewColor[n], cptNA=latLonTreatment(latitude[n],longitude[n], cptNA)
 	print  "traites : ",cptTreated-cptNA, ", non traites : ", cptNA
+	
+	cutGraph(graphCpy)
 
 	#########################################################################
 	# Regarder le nombre d'accidents en fonction de la zone geographique : Le faire par pallier(1 sous arbre hierarchique) => (Etat, County, Ville, Route)
