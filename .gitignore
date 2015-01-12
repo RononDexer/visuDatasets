@@ -1,0 +1,7 @@
+visibility.pyo
+*.pyo
+data/latLongOfPlaces.csv
+data/nbVehicles.csv
+data/populationsDensitySurface.csv
+data/ACCIDENT2007-FullDataSetSimplified.csv
+USERGUIDE-2007.pdf
