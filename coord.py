@@ -133,11 +133,149 @@ def cutGraph(graph):
 		
 	##Edges ?
 		
+def speedLimit(graph, nbState):
+	SP_LIMIT =  graph.getIntegerProperty("SP_LIMIT")
+	STATE =  graph.getIntegerProperty("STATE")
+
+	speedType = []
+	
+	for n in graph.getNodes():
+	 	exist = False;
+		for i in range(0, len(speedType)):
+			if(speedType[i] == SP_LIMIT[n]):
+				exist = True				
+				break;
+		if(exist == False):
+			speedType.append(SP_LIMIT[n])
+
+	hashTotalMeanAccident = {}
+	for i in range(0, len(speedType)):
+		totalAccident = 0.0;
+		meanAccident = 0.0;
+		accidentPerState = [];			
+		for n in graph.getNodes():
+			if(speedType[i] == SP_LIMIT[n]):
+				totalAccident+=1;
+		meanAccident = totalAccident/nbState;
+		hashTotalMeanAccident.update({speedType[i]:meanAccident})
+	
+	hashAccidentsPerSpeedState={}
+	for i in range(1, 57):
+		if(i==3 or i==7 or i==14 or i==52):
+			continue
+		speedAccidentList = []			
+		for j in range(0, len(speedType)):
+			speedAccidentList.append(0)
+			for n in graph.getNodes():				
+				if(i == STATE[n] and speedType[j] == SP_LIMIT[n]):
+					speedAccidentList[j]+=1		
+		hashAccidentsPerSpeedState.update({i:speedAccidentList})	
 		
 	
+	hashConsSpeed = {}
+	for key, value in hashAccidentsPerSpeedState.iteritems():
+		sumAccident = 0
+		for i in range(0, len(speedType)):
+			sumAccident += (hashTotalMeanAccident.get(speedType[i]) - value[i])
+		if(sumAccident < 0):
+			sumAccident = 0
+		hashConsSpeed.update({key:(sumAccident/len(speedType))})
+	hashConsSpeed = normalizeHash(hashConsSpeed)
+	
+	return hashConsSpeed
 	
 	
-
+def regulation(graph, nbState):
+	TRA_CONT =  graph.getIntegerProperty("TRA_CONT")
+	T_CONT_F =  graph.getIntegerProperty("T_CONT_F")
+	STATE =  graph.getIntegerProperty("STATE")
+	
+	
+	for n in graph.getNodes():
+		if(T_CONT_F[n] == 0 or T_CONT_F[n] == 1 or T_CONT_F[n] == 2):
+			TRA_CONT[n] == 0
+		if(T_CONT_F[n] == 9):
+			TRA_CONT[n] == 99
+			
+	for n in graph.getNodes():
+		if(TRA_CONT[n] > 0 and TRA_CONT[n] <= 9):
+			TRA_CONT[n] = 1
+		elif(TRA_CONT[n] >= 20 and TRA_CONT[n] <= 29):
+			TRA_CONT[n] = 2
+		elif(TRA_CONT[n] >= 30 and TRA_CONT[n] <= 39):
+			TRA_CONT[n] = 3
+		elif(TRA_CONT[n] >= 40 and TRA_CONT[n] <= 41):
+			TRA_CONT[n] = 4
+		elif(TRA_CONT[n] == 50):
+			TRA_CONT[n] = 5
+		elif(TRA_CONT[n] >= 60 and TRA_CONT[n] <= 69):
+			TRA_CONT[n] = 6
+		elif(TRA_CONT[n] >= 70 and TRA_CONT[n] <= 79):
+			TRA_CONT[n] = 7
+		elif(TRA_CONT[n] >= 70 and TRA_CONT[n] <= 79):
+			TRA_CONT[n] = 7
+		elif(TRA_CONT[n] == 80):
+			TRA_CONT[n] = 8
+	
+	regType = []
+	
+	for n in graph.getNodes():
+	 	exist = False;
+		for i in range(0, len(regType)):
+			if(regType[i] == TRA_CONT[n]):
+				exist = True				
+				break;
+		if(exist == False):
+			regType.append(TRA_CONT[n])	
+	
+	for n in graph.getNodes():
+		if(TRA_CONT[n] > 0 and TRA_CONT[n] < 99):
+			TRA_CONT[n] = 1
+			
+	hashAccidentsRegulationPerState={}
+	for i in range(1, 57):
+		if(i==3 or i==7 or i==14 or i==52):
+			continue
+		meanRegulation = 0.0
+		nbRegulation = 0.0
+		for n in graph.getNodes():
+			if(TRA_CONT[n] < 99 and STATE[n] == i):
+				meanRegulation+=(TRA_CONT[n]+1) ## += 1 or 2
+				nbRegulation+=1
+		if(nbRegulation < 1):
+			hashAccidentsRegulationPerState.update({i:1}) ## Very bad state
+		else:
+			hashAccidentsRegulationPerState.update({i:(meanRegulation/nbRegulation)})
+	
+	hashAccidentsRegulationPerState = normalizeHash(hashAccidentsRegulationPerState)
+	
+	return hashAccidentsRegulationPerState
+	
+## Normalize between 1 & 2	
+def normalizeHash(hashStateConseq): 
+	_max = 0.0
+	_min = 9999.9
+	hashStateConseqNormalized = {}
+	for key, value in hashStateConseq.iteritems():
+		if(value < _min) :
+			_min = value;
+		if(value > _max):
+			_max = value
+	for key, value in hashStateConseq.iteritems():
+		hashStateConseqNormalized.update({key:(value - _min)/(_max-_min)+1})
+	return hashStateConseqNormalized
+	
+def stateResponsability(hashSpeedStateCons, hashRegStateCons, nbState):
+	hashStateCons = {}
+	for i in range(1, 57):
+		if(i==3 or i==7 or i==14 or i==52):
+			continue
+		for key, value in hashSpeedStateCons.iteritems():
+			hashStateCons.update({i:(hashRegStateCons.get(i)/value)})
+	
+	hashStateCons = normalizeHash(hashStateCons)
+	return hashStateCons
+	
 # the main(graph) function must be defined to run the script on the current graph
 # this script will redraw the graph as a onion graph. The input graph must be a tree.
 def main(graph):
@@ -169,7 +307,7 @@ def main(graph):
 	REL_JUNC =  graph.getIntegerProperty("REL_JUNC")
 	REL_ROAD =  graph.getIntegerProperty("REL_ROAD")
 	ROUTE =  graph.getIntegerProperty("ROUTE")
-	SCH_BUS =  graph.getIntegerProperty("SCH_BUS")
+	SCH_BUS =  graph.getBooleanProperty("SCH_BUS")
 	SP_LIMIT =  graph.getIntegerProperty("SP_LIMIT")
 	STATE =  graph.getIntegerProperty("STATE")
 	ST_CASE =  graph.getIntegerProperty("ST_CASE")
@@ -179,13 +317,28 @@ def main(graph):
 	T_CONT_F =  graph.getIntegerProperty("T_CONT_F")
 	VE_TOTAL =  graph.getIntegerProperty("VE_TOTAL")
 	WEATHER =  graph.getIntegerProperty("WEATHER")
-	latitude =  graph.getIntegerProperty("LATITUDE")
-	longitude =  graph.getIntegerProperty("LONGITUD")
-	#get the needed properties from the graph
-	viewLayout =  graph.getLayoutProperty("viewLayout")#nodes' position (x,y)
-	viewSize =  graph.getSizeProperty("viewSize") #nodes' size
-	viewShape =  graph.getIntegerProperty("viewShape") #nodes' shape
-	viewColor =  graph.getColorProperty("viewColor") #nodes' color
+	viewBorderColor =  graph.getColorProperty("viewBorderColor")
+	viewBorderWidth =  graph.getDoubleProperty("viewBorderWidth")
+	viewColor =  graph.getColorProperty("viewColor")
+	viewFont =  graph.getStringProperty("viewFont")
+	viewFontSize =  graph.getIntegerProperty("viewFontSize")
+	viewLabel =  graph.getStringProperty("viewLabel")
+	viewLabelBorderColor =  graph.getColorProperty("viewLabelBorderColor")
+	viewLabelBorderWidth =  graph.getDoubleProperty("viewLabelBorderWidth")
+	viewLabelColor =  graph.getColorProperty("viewLabelColor")
+	viewLabelPosition =  graph.getIntegerProperty("viewLabelPosition")
+	viewLayout =  graph.getLayoutProperty("viewLayout")
+	viewMetaGraph =  graph.getGraphProperty("viewMetaGraph")
+	viewMetric =  graph.getDoubleProperty("viewMetric")
+	viewRotation =  graph.getDoubleProperty("viewRotation")
+	viewSelection =  graph.getBooleanProperty("viewSelection")
+	viewShape =  graph.getIntegerProperty("viewShape")
+	viewSize =  graph.getSizeProperty("viewSize")
+	viewSrcAnchorShape =  graph.getIntegerProperty("viewSrcAnchorShape")
+	viewSrcAnchorSize =  graph.getSizeProperty("viewSrcAnchorSize")
+	viewTexture =  graph.getStringProperty("viewTexture")
+	viewTgtAnchorShape =  graph.getIntegerProperty("viewTgtAnchorShape")
+	viewTgtAnchorSize =  graph.getSizeProperty("viewTgtAnchorSize")
 	#if longitude=999 99 99.99 or 888 88 88.88 unknown
 	#if latitude=  99 99 99.99 or  88 88 88.88 unknown
 
@@ -198,10 +351,11 @@ def main(graph):
 		cptNA = cleanData(graphCpy, n, COUNTY, STATE, cptNA)
 	for n in graphCpy.getNodes():
 		viewSize[n] = viewSize[n]/100
-		viewLayout[n], viewColor[n], cptNA=latLonTreatment(latitude[n],longitude[n], cptNA)
+		viewLayout[n], viewColor[n], cptNA=latLonTreatment(LATITUDE[n],LONGITUD[n], cptNA)
 	print  "traites : ",cptTreated-cptNA, ", non traites : ", cptNA
 	
-	cutGraph(graphCpy)
+	stateResponsability(speedLimit(graph, 52), regulation(graph, 52), 52)
+##	cutGraph(graphCpy)
 
 	#########################################################################
 	# Regarder le nombre d'accidents en fonction de la zone geographique : Le faire par pallier(1 sous arbre hierarchique) => (Etat, County, Ville, Route)
