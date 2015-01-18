@@ -276,6 +276,30 @@ def stateResponsability(hashSpeedStateCons, hashRegStateCons, nbState):
 	hashStateCons = normalizeHash(hashStateCons)
 	return hashStateCons
 	
+	
+def daysSubGraph(graph):
+	DAY_WEEK =  graph.getIntegerProperty("DAY_WEEK")
+	subGphDayWeek=graph.addSubGraph("dayWeek")
+	
+	dayType = []
+	
+	for n in graph.getNodes():
+	 	exist = False;
+		for i in range(0, len(dayType)):
+			if(dayType[i] == DAY_WEEK[n]):
+				exist = True				
+				break;
+		if(exist == False):
+			dayType.append(DAY_WEEK[n])
+	
+	subGraphDays = []		
+	for i in range(1, 8):
+		currentSubGraph = subGphDayWeek.addSubGraph(str(i))
+		for n in graph.getNodes():
+			if(DAY_WEEK[n] == i):
+				currentSubGraph.addNode(n)
+		subGraphDays.append(currentSubGraph)		
+	
 # the main(graph) function must be defined to run the script on the current graph
 # this script will redraw the graph as a onion graph. The input graph must be a tree.
 def main(graph):
@@ -354,7 +378,9 @@ def main(graph):
 		viewLayout[n], viewColor[n], cptNA=latLonTreatment(LATITUDE[n],LONGITUD[n], cptNA)
 	print  "traites : ",cptTreated-cptNA, ", non traites : ", cptNA
 	
-	stateResponsability(speedLimit(graph, 52), regulation(graph, 52), 52)
+##	stateResponsability(speedLimit(graph, 52), regulation(graph, 52), 52)
+	
+	daysSubGraph(graph)
 ##	cutGraph(graphCpy)
 
 	#########################################################################
