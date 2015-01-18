@@ -9,6 +9,8 @@ def compute_visibility(road, light, weather):
 	
 	if(road == 2) :
 		visibility += 1
+	elif(road == 8 or road == 9) :
+		return -1
 		
 	if(light == 4 or light == 5) :
 		visibility += 1
@@ -16,30 +18,33 @@ def compute_visibility(road, light, weather):
 		visibility += 2
 	elif(light == 2) :
 		visibility += 3
+	elif(light == 9) :
+		return -1
 		
 	if(weather == 2 or weather == 3 or weather == 4) :
 		visibility += 1
 	elif(weather == 5 or weather == 7) :
 		visibility += 2
+	elif(light == 9) :
+		return -1
 	
 	return visibility
 	
 def color_node(node, visibility, color, position) :
 	if(visibility == 0) : # perfect visibility conditions
 		color[node] = tlp.Color(0, 255, 0)
-#		position[node] = tlp.Coord(0, 0, 0)
 		
 	elif(visibility == 1 or visibility == 2) :
 		color[node] = tlp.Color(0, 125, 125)
-#		position[node] = tlp.Coord(30, 0, 0)
 		
 	elif(visibility == 3 or visibility == 4) :
 		color[node] = tlp.Color(125, 125, 0)
-#		position[node] = tlp.Coord(60, 0, 0)
 		
 	elif(visibility == 5 or visibility == 6) : # worse visibility conditions
 		color[node] = tlp.Color(255, 0, 0)
-#		position[node] = tlp.Coord(90, 0, 0)
+	
+	elif(visibility < 0) : # no data
+		color[node] = tlp.Color(0, 0, 0)
 	
 	return 0
 
