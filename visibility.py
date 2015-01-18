@@ -34,13 +34,22 @@ def color_node(node, visibility, color, position) :
 	if(visibility == 0) : # perfect visibility conditions
 		color[node] = tlp.Color(0, 255, 0)
 		
-	elif(visibility == 1 or visibility == 2) :
-		color[node] = tlp.Color(0, 125, 125)
+	elif(visibility == 1) :
+		color[node] = tlp.Color(0, 255, 0)
+	
+	elif(visibility == 2) :
+		color[node] = tlp.Color(0, 86, 27)
 		
-	elif(visibility == 3 or visibility == 4) :
-		color[node] = tlp.Color(125, 125, 0)
+	elif(visibility == 3) :
+		color[node] = tlp.Color(112, 141, 35)
 		
-	elif(visibility == 5 or visibility == 6) : # worse visibility conditions
+	elif(visibility == 4) :
+		color[node] = tlp.Color(255, 127, 0)
+		
+	elif(visibility == 5) :
+		color[node] = tlp.Color(231, 62, 1)
+		
+	elif(visibility == 6) : # worse visibility conditions
 		color[node] = tlp.Color(255, 0, 0)
 	
 	elif(visibility < 0) : # no data
@@ -99,7 +108,8 @@ def main(graph):
 		color_node(n, v, viewColor, viewLayout)
 		visibilityCombin.append(v)
 		hashNV.update({n:v})
-		VISIBILITY[n] = v
+		if(v > 0) :
+			VISIBILITY[n] = v
 
 
 	## to get from visibilityCom
