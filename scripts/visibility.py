@@ -9,7 +9,7 @@ def compute_visibility(road, light, weather):
 	
 	if(road == 2) :
 		visibility += 1
-	elif(road == 8 or road == 9) :
+	elif(road == 9) :
 		return -1
 		
 	if(light == 4 or light == 5) :
@@ -25,7 +25,7 @@ def compute_visibility(road, light, weather):
 		visibility += 1
 	elif(weather == 5 or weather == 7) :
 		visibility += 2
-	elif(light == 9) :
+	elif(light == 8 or light == 9) :
 		return -1
 	
 	return visibility
@@ -35,10 +35,10 @@ def color_node(node, visibility, color, position) :
 		color[node] = tlp.Color(0, 255, 0)
 		
 	elif(visibility == 1) :
-		color[node] = tlp.Color(0, 255, 0)
+		color[node] = tlp.Color(38, 195, 35)
 	
 	elif(visibility == 2) :
-		color[node] = tlp.Color(0, 86, 27)
+		color[node] = tlp.Color(103, 159, 90)
 		
 	elif(visibility == 3) :
 		color[node] = tlp.Color(112, 141, 35)
@@ -108,8 +108,7 @@ def main(graph):
 		color_node(n, v, viewColor, viewLayout)
 		visibilityCombin.append(v)
 		hashNV.update({n:v})
-		if(v > 0) :
-			VISIBILITY[n] = v
+		VISIBILITY[n] = v
 
 
 	## to get from visibilityCom
